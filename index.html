@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام بوابة دخول صهاريج النفط - الشركة السورية للبترول (نسخة الكمبيوتر حصراً)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for Excel Reading and Writing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* إعدادات الطباعة المكتبية: الكروت بمقاس 210mm × 148mm بالضبط */
+        @media print {
+            @page {
+                size: 210mm 148mm !important;
+                margin: 0mm !important;
+            }
+            html, body {
+                width: 210mm !important;
+                height: 148mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                -webkit-user-select: auto !important;
+                user-select: auto !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .page-break {
+                page-break-after: always;
+                break-after: page;
+                page-break-inside: avoid !important;
+            }
+            .print-card-box {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                width: 200mm !important;
+                height: 140mm !important;
+                box-sizing: border-box !important;
+                padding: 4mm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                page-break-inside: avoid !important;
+                background: white !important;
+                overflow: hidden !important;
+                margin: 4mm auto !important;
+            }
+            .envelope-cover-page {
+                size: A4 portrait !important;
+                width: 190mm !important;
+                height: 275mm !important;
+                box-sizing: border-box !important;
+                padding: 8mm !important;
+                page-break-after: always;
+                break-after: page;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+                font-size: 11px !important;
+                background: white !important;
+                margin: auto !important;
+                border: 3px solid #000 !important;
+            }
+        }
+
+        .hidden-signature-lock {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12" oncontextmenu="return false;">
+
+    <!-- شاشة حظر الهواتف الذكية والأجهزة اللوحية -->
+    <div id="desktopOnlyBlocker" class="fixed inset-0 bg-slate-900 z-[99999] flex items-center justify-center p-6 text-center hidden">
+        <div class="bg-white max-w-lg w-full p-8 rounded-3xl shadow-2xl space-y-6 border-4 border-rose-600">
+            <div class="w-20 h-20 bg-rose-100 text-rose-700 rounded-full flex items-center justify-center mx-auto text-3xl font-bold shadow-inner">
+                💻
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-black text-slate-900">عذراً، النظام مخصص لأجهزة الكمبيوتر حصراً</h2>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    تم تصميم وبرمجة هذا النظام الإداري والأمني ليعمل حصرياً على أجهزة الكمبيوتر المكتبية والمحمولة (Desktop / Laptop) لضمان دقة طباعة مذكرات التفريغ وإدارة السجلات والتحكم بالصلاحيات بدقة عالية. يرجى فتح النظام من متصفح حاسوب.
+                </p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border text-xs space-y-1 font-bold text-slate-700">
+                <div>الشركة السورية للبترول - إدارة المنطقة الوسطى</div>
+                <div class="text-blue-900">المطور البرمجي: محمد غياث المصري (أبو خالد)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- عنصر مخفي لالتقاط صورة موظف البوابة بالكاميرا في السجلات السرية للمدير -->
+    <div class="hidden">
+        <video id="gateCameraVideo" autoplay playsinline width="320" height="240"></video>
+        <canvas id="gateCameraCanvas" width="320" height="240"></canvas>
+    </div>
+
+    <!-- بصمة وتوقيع المطور المشفر لحماية الملكية الداخلية -->
+    <div class="hidden-signature-lock" data-owner="محمد غياث المصري (أبو خالد)" data-phone="00963950577403" data-system="SPC-Gate-System-2026">
+        تم تطوير هذا النظام وبرمجته بالكامل حصرياً لصالح المطور محمد غياث المصري (أبو خالد) - 📱 00963950577403 - جميع الحقوق محفوظة ومحمية برمجياً.
+    </div>
+
+    <!-- نافذة قفل تسجيل الدخول -->
+    <div id="authModal" class="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center p-4 no-print hidden">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl max-w-md w-full text-center space-y-6 border border-slate-200">
+            <div class="w-16 h-16 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-inner">
+                🔐
+            </div>
+            <div>
+                <h3 class="text-xl font-extrabold text-slate-900">نظام حماية وبوابة صهاريج SPC (كمبيوتر)</h3>
+                <p class="text-xs text-slate-500 mt-1">النسخة المكتبية المركزية المحمية بالسحابة</p>
+            </div>
+            <div class="space-y-3 text-right">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم / الحساب</label>
+                    <input type="text" id="loginUser" placeholder="أدخل اسم الحساب..." class="w-full p-3 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                    <input type="password" id="loginPass" placeholder="أدخل كلمة المرور..." class="w-full p-3 text-center text-lg tracking-widest border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                </div>
+                <button onclick="attemptLogin()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl shadow-lg transition mt-2">
+                    تسجيل الدخول إلى النظام
+                </button>
+                <p id="errorMsg" class="text-xs text-rose-600 font-bold text-center hidden">بيانات الدخول غير صحيحة، حاول مرة أخرى.</p>
+            </div>
+            
+            <div class="bg-slate-50 p-3 rounded-xl border text-center space-y-1">
+                <div class="text-[11px] font-extrabold text-slate-700">تطوير وبرمجة: <span class="text-blue-900">محمد غياث المصري (أبو خالد)</span></div>
+                <div class="text-[11px] font-bold text-emerald-700 font-mono" dir="ltr">📱 00963950577403</div>
+                <div class="text-[10px] text-slate-500 font-mono">📧 Mhmdghyathalmsry91@gmail.com</div>
+            </div>
+
+            <div class="text-[10px] text-slate-400 border-t pt-2">
+                نظام آلي محمي ومرخص - الشركة السورية للبترول
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة عرض صورة الموظف الأمنية بالحجم الكبير (للمدير) -->
+    <div id="viewStaffPhotoModal" class="fixed inset-0 bg-slate-900/85 z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full space-y-4 text-center border-2 border-blue-600">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm font-black text-slate-900">📷 صورة موظف البوابة (التوثيق الأمني)</h3>
+                <button onclick="closeViewStaffPhotoModal()" class="text-rose-600 font-bold text-base px-2">✕</button>
+            </div>
+            <div class="bg-slate-100 p-2 rounded-xl border flex items-center justify-center">
+                <img id="modalStaffPhotoImg" src="" alt="صورة الموظف" class="max-h-72 max-w-full rounded-lg shadow-md border-2 border-slate-300 object-contain">
+            </div>
+            <div id="modalStaffPhotoMeta" class="text-xs font-bold text-slate-700 space-y-1 bg-slate-50 p-3 rounded-lg border text-right">
+                <div>الموظف: <span id="modalStaffName" class="text-blue-900"></span></div>
+                <div>التوقيت: <span id="modalStaffTime" class="font-mono"></span></div>
+                <div>السيارة: <span id="modalStaffCar" class="font-mono text-amber-800"></span></div>
+            </div>
+            <button onclick="closeViewStaffPhotoModal()" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">إغلاق النافذة</button>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الطباعة الاحترازية -->
+    <div id="printConfirmModal" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full space-y-4 text-right border-2 border-blue-600">
+            <div class="flex items-center gap-3 border-b pb-3">
+                <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl font-bold">
+                    🖨️
+                </div>
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900">تأكيد عملية الطباعة المكتبية</h3>
+                    <p class="text-xs text-slate-500">إرسال المذكرة إلى الطابعة وتوثيق الحركة في السحابة</p>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl space-y-2 border text-xs">
+                <div><strong>رقم السيارة (النمرة):</strong> <span id="confCarNum" class="font-black text-blue-900 text-sm"></span></div>
+                <div><strong>اسم السائق:</strong> <span id="confDriverName" class="font-bold text-slate-800"></span></div>
+                <div><strong>الرقم التسلسلي:</strong> <span id="confSerial" class="font-mono text-slate-700"></span></div>
+            </div>
+            <p class="text-xs font-bold text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                ⚠️ هل أنت متأكد من رغبتك في تسجيل الدخول وطباعة مذكرة التفريغ لهذه السيارة الآن؟
+            </p>
+            <input type="hidden" id="confTargetSerial">
+            <div class="flex gap-2 pt-2">
+                <button onclick="confirmAndExecutePrint()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 rounded-xl transition shadow">نعم، تأكيد وطباعة فورية</button>
+                <button onclick="closePrintConfirmModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-3 rounded-xl transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- محتوى النظام الأساسي -->
+    <div id="appContent" class="hidden">
+        <!-- شريط التحكم العلوي -->
+        <div class="bg-slate-900 text-white py-4 shadow-md no-print mb-6">
+            <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-base sm:text-xl font-bold text-amber-400">نظام بوابة صهاريج النفط (النسخة السحابية المركزية)</h1>
+                    <p class="text-xs text-slate-300 mt-0.5" id="userRoleDisplay">لوحة التحكم المركزية</p>
+                </div>
+                
+                <div class="bg-slate-800 border border-slate-700 px-3 py-2 rounded-xl flex items-center gap-3">
+                    <div class="text-right">
+                        <span class="text-[10px] text-amber-400 block font-bold">المطور البرمجي</span>
+                        <span class="text-xs font-black text-white">محمد غياث المصري (أبو خالد)</span>
+                    </div>
+                    <div class="text-left border-r border-slate-700 pr-3">
+                        <span class="text-[10px] text-slate-400 block">تواصل مباشر</span>
+                        <span class="text-xs font-bold text-emerald-400 font-mono" dir="ltr">📱 00963950577403</span>
+                    </div>
+                </div>
+
+                <div class="text-left flex items-center gap-2">
+                    <button onclick="lockSystem()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3 py-2 rounded-lg font-bold shadow transition">
+                        قفل 🔒
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 no-print space-y-6">
+
+            <!-- تبويبات التنقل -->
+            <div id="navTabsContainer" class="flex flex-wrap gap-2 border-b border-slate-300 pb-3">
+                <button onclick="switchTab('gate')" id="btnTabGate" class="bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition">
+                    🛡️ بوابة الدخول (بحث وطباعة المذكرات)
+                </button>
+                <button onclick="switchTab('processor')" id="btnTabProcessor" class="bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition admin-only">
+                    📥 معالجة إكسل
+                </button>
+                <button onclick="switchTab('convoysArchive')" id="btnTabConvoysArchive" class="bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition admin-only">
+                    🚚 أرشيف القوافل
+                </button>
+                <button onclick="switchTab('staffManagement')" id="btnTabStaffManagement" class="bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition admin-only">
+                    👥 الموظفين
+                </button>
+                <button onclick="switchTab('auditLogs')" id="btnTabAuditLogs" class="bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition admin-only">
+                    📊 السجلات والتقارير
+                </button>
+                <button onclick="switchTab('archive')" id="btnTabArchive" class="bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition admin-only">
+                    🗄️ بدل ضائع
+                </button>
+            </div>
+
+            <!-- قسم بوابة دخول الصهاريج -->
+            <div id="tabGate" class="space-y-6">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="border-b pb-3 flex flex-wrap justify-between items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                            🔍 نظام بوابة الدخول والبحث السريع عن السيارات
+                        </h2>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="printCurrentEnvelopeCoverOnly()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1 admin-only">
+                                📄 واجهة الظرف (الإحصائية)
+                            </button>
+                            <button onclick="downloadCurrentEnvelopeExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1 admin-only">
+                                📥 سحب الظرف إلكترونياً (Excel)
+                            </button>
+                            <button onclick="openNewTankerModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shadow transition flex items-center gap-1 admin-only">
+                                ➕ صهريج جديد (بدون إكسل)
+                            </button>
+                            <span id="gateActiveConvoyInfo" class="text-xs bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg font-bold border border-blue-200">
+                                القافلة النشطة: متصل بالسحابة ☁️
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">ابحث برقم السيارة (النمرة) أو اسم السائق أو الرقم التسلسلي</label>
+                            <input type="text" id="gateSearchInput" oninput="renderGateSearch()" placeholder="اكتب رقم السيارة للبحث الفوري..." class="w-full p-3 text-base font-bold border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                        </div>
+                        <div class="flex items-end">
+                            <span id="gateResultsCount" class="text-xs font-bold text-slate-500 bg-slate-100 px-4 py-3 rounded-xl border w-full text-center">إجمالي الصهاريج المتاحة للبوابة: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px] border rounded-xl">
+                        <table class="w-full text-xs text-right text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b sticky top-0">
+                                <tr>
+                                    <th class="p-3">م</th>
+                                    <th class="p-3">الرقم التسلسلي</th>
+                                    <th class="p-3">نوع الصهريج</th>
+                                    <th class="p-3">اسم السائق</th>
+                                    <th class="p-3 font-black text-blue-900">رقم السيارة (النمرة)</th>
+                                    <th class="p-3">وزن التحميل / مواصلات</th>
+                                    <th class="p-3">حالة البوابة والدخول</th>
+                                    <th class="p-3 text-center">إجراءات وطباعة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gateTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم إدارة حسابات الموظفين والمدير -->
+            <div id="tabStaffManagement" class="hidden space-y-6 admin-only-section">
+                <div class="bg-amber-50 p-4 sm:p-6 rounded-xl border-2 border-amber-300 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-amber-200 text-amber-900 rounded-xl flex items-center justify-center font-bold text-lg">
+                                👑
+                            </div>
+                            <div>
+                                <h3 class="text-sm sm:text-base font-black text-amber-950">إعدادات حساب المدير المطور</h3>
+                                <p class="text-xs text-amber-800">تعديل اسم المستخدم وكلمة المرور الخاصة بحساب الإدارة الرئيسي</p>
+                            </div>
+                        </div>
+                        <button onclick="openEditAdminModal()" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-1">
+                            ✏️ تعديل بيانات دخول المدير
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs bg-white/80 p-3 rounded-lg border border-amber-200">
+                        <div><strong>اسم المستخدم الحالي:</strong> <span id="dispAdminUser" class="font-bold text-blue-900 font-mono">admin</span></div>
+                        <div><strong>كلمة المرور الحالية:</strong> <span id="dispAdminPass" class="font-bold text-slate-800 font-mono">******</span></div>
+                        <div><strong>الصلاحية:</strong> <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-extrabold">مدير مطور كامل</span></div>
+                        <div><strong>الحالة:</strong> <span class="text-emerald-700 font-bold">مؤمن ومحمي ✓</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-slate-800">👥 إدارة حسابات موظفي البوابة</h2>
+                            <p class="text-xs text-slate-500">صلاحية إضافة، تعديل، وحذف الحسابات مقتصرة حصرياً على المدير المطور</p>
+                        </div>
+                        <button onclick="openAddStaffModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow transition flex items-center gap-1">
+                            ➕ إضافة حساب موظف جديد
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto border rounded-xl">
+                        <table class="w-full text-xs text-right text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th class="p-3">اسم الحساب (Login ID)</th>
+                                    <th class="p-3">الاسم الثلاثي لموظف البوابة</th>
+                                    <th class="p-3">رقم الهاتف</th>
+                                    <th class="p-3">بريد الجيميل (Gmail)</th>
+                                    <th class="p-3">كلمة المرور</th>
+                                    <th class="p-3 text-center">إجراءات وإدارة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم مراقبة وسجل نشاط الموظفين وتقارير الإكسل -->
+            <div id="tabAuditLogs" class="hidden space-y-6 admin-only-section">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-3">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">
+                            📊 سجل مراقبة وتتبع عمل موظفي البوابة وتقارير الدخول اليومية (محصور بالمدير)
+                        </h2>
+                        <div class="flex gap-2">
+                            <button onclick="exportDailyGateExcelReport()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
+                                📥 سحب تقرير إكسل لحركة الدخول اليومية
+                            </button>
+                            <button onclick="clearAuditLogs()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                🗑️ مسح السجل
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px] border rounded-xl">
+                        <table class="w-full text-xs text-right text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 font-bold border-b sticky top-0">
+                                <tr>
+                                    <th class="p-3">التوقيت والتاريخ</th>
+                                    <th class="p-3 text-center">صورة الكاميرا الأمنية</th>
+                                    <th class="p-3">الموظف المنفذ (الاسم الحقيقي)</th>
+                                    <th class="p-3">اسم الحساب المستخدم</th>
+                                    <th class="p-3">رقم السيارة (النمرة)</th>
+                                    <th class="p-3">اسم السائق</th>
+                                    <th class="p-3">الرقم التسلسلي للمذكرة</th>
+                                    <th class="p-3">نوع الإجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القسم: معالجة ملف الإكسل -->
+            <div id="tabProcessor" class="hidden space-y-6 admin-only-section">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between border-b pb-4 mb-4 flex-wrap gap-2">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                            📥 رفع ومعالجة ملف قافلة الإكسل (SPC Excel)
+                        </h2>
+                        <button onclick="downloadTemplate()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border flex items-center gap-1 transition">
+                            💾 تحميل قالب إكسل مطابق
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">اختر ملف إكسل القافلة (.xlsx, .xls)</label>
+                            <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border border-slate-300 rounded-lg cursor-pointer bg-slate-50">
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="processExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                ⚡ معالجة وأرشفة القافلة والطوارئ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="batchActions" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <span class="font-bold text-amber-900 text-sm">تمت معالجة القافلة والطوارئ بنجاح: </span>
+                        <span id="tankerCount" class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-extrabold text-sm">0</span>
+                        <span class="text-amber-800 text-sm"> صهريج (نظامي + طوارئ)</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="printCurrentEnvelopeCoverOnly()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-1">
+                            📄 واجهة الظرف (الإحصائية)
+                        </button>
+                        <button onclick="downloadCurrentEnvelopeExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-1">
+                            📥 سحب الظرف إلكترونياً (Excel)
+                        </button>
+                        <button onclick="printSelectedTankers()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-1">
+                            🖨️ طباعة المحددة
+                        </button>
+                        <button onclick="printConvoyCompleteFile('temp')" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-1">
+                            📦 سحب القافلة كاملاً (مع الطوارئ)
+                        </button>
+                        <button onclick="printAllCards()" class="bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition flex items-center gap-1">
+                            🖨️ طباعة الكل
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tableContainer" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden space-y-4 p-4">
+                    <div class="flex justify-between items-center font-bold text-slate-700 text-sm border-b pb-2">
+                        <span>بيانات صهاريج القافلة النظامية</span>
+                        <label class="flex items-center gap-2 cursor-pointer bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 text-blue-900 text-xs">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
+                            <span>تحديد الكل للطباعة</span>
+                        </label>
+                    </div>
+                    <div class="overflow-x-auto max-h-60">
+                        <table class="w-full text-xs text-right text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b sticky top-0">
+                                <tr>
+                                    <th class="p-3 text-center w-10">اختيار</th>
+                                    <th class="p-3">م</th>
+                                    <th class="p-3">الرقم التسلسلي</th>
+                                    <th class="p-3">اسم السائق</th>
+                                    <th class="p-3">نوع السيارة</th>
+                                    <th class="p-3">رقم السيارة</th>
+                                    <th class="p-3">وزن التحميل (kg)</th>
+                                    <th class="p-3">الحقل</th>
+                                    <th class="p-3 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tankersTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pt-4 border-t">
+                        <div class="font-bold text-rose-800 text-sm pb-2 flex items-center gap-2">
+                            🚨 صهاريج الطوارئ المستخرجة من الملف (<span id="emergencyCountBadge">0</span> صهريج)
+                        </div>
+                        <div class="overflow-x-auto max-h-60 border border-rose-200 rounded-xl">
+                            <table class="w-full text-xs text-right text-slate-600">
+                                <thead class="bg-rose-50 text-rose-900 uppercase font-bold border-b sticky top-0">
+                                    <tr>
+                                        <th class="p-3 text-center w-10">اختيار</th>
+                                        <th class="p-3">م</th>
+                                        <th class="p-3">الرقم التسلسلي</th>
+                                        <th class="p-3">اسم السائق</th>
+                                        <th class="p-3">رقم الهاتف</th>
+                                        <th class="p-3 font-black text-rose-900">رقم السيارة</th>
+                                        <th class="p-3">مواصلات / خط</th>
+                                        <th class="p-3 text-center">إجراءات الطباعة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="emergencyTableBody" class="divide-y divide-slate-100">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أرشيف القوافل -->
+            <div id="tabConvoysArchive" class="hidden space-y-6 admin-only-section">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex flex-wrap justify-between items-center border-b pb-3 gap-4">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                            🚚 أرشيف القوافل (سحب وإدارة ملفات القوافل)
+                        </h2>
+                        <div>
+                            <input type="text" id="convoySearchInput" oninput="renderConvoysArchive()" placeholder="ابحث برقم الحقل أو التاريخ..." class="p-2 text-xs border rounded-lg w-64">
+                        </div>
+                    </div>
+                    <div id="convoysListContainer" class="space-y-4">
+                    </div>
+                </div>
+            </div>
+
+            <!-- البحث الفردي وبدل ضائع -->
+            <div id="tabArchive" class="hidden space-y-6 admin-only-section">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2 border-b pb-3">
+                        🗄️ الأرشيف الفردي للمذكرات (إصدار بدل ضائع)
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">بحث برقم السيارة أو اسم السائق أو الرقم التسلسلي</label>
+                            <input type="text" id="searchInput" oninput="filterArchive()" placeholder="اكتب للبحث الفوري..." class="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-end">
+                            <span id="archiveCount" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-2.5 rounded-lg border">إجمالي المذكرات المؤرشفة: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[500px] border rounded-lg">
+                        <table class="w-full text-xs text-right text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b sticky top-0">
+                                <tr>
+                                    <th class="p-3">م</th>
+                                    <th class="p-3">الرقم التسلسلي</th>
+                                    <th class="p-3">نوع المذكرة</th>
+                                    <th class="p-3">تاريخ الانطلاق</th>
+                                    <th class="p-3">اسم السائق</th>
+                                    <th class="p-3">رقم السيارة</th>
+                                    <th class="p-3 text-center">إجراءات طباعة بدل ضائع</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTableBody" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- منطقة عرض وطباعة الكروت والظروف للطابعة المكتبية -->
+        <div id="cardsPrintContainer" class="max-w-4xl mx-auto mt-6 px-4">
+        </div>
+    </div>
+
+    <!-- نافذة إنشاء مذكرة صهريج جديد -->
+    <div id="newTankerModal" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-lg w-full space-y-4 text-right">
+            <h3 class="text-base font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
+                ➕ إنشاء مذكرة صهريج جديد (بدون إكسل / حالة طارئة)
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">اسم السائق الثلاثي</label>
+                    <input type="text" id="newDriverName" placeholder="أدخل اسم السائق..." class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">رقم السيارة (النمرة)</label>
+                    <input type="text" id="newCarNumber" placeholder="مثال: 009018" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">نوع السيارة</label>
+                    <input type="text" id="newCarType" value="فولفو" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">وزن التحميل (kg)</label>
+                    <input type="text" id="newWeight" value="32,000" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">الحقل المصدر</label>
+                    <input type="text" id="newField" value="رميلان" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">مكان التفريغ</label>
+                    <input type="text" id="newUnload" value="حمص" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">الشركة الناقلة</label>
+                    <input type="text" id="newTrans" value="شركة سيلك" class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="saveAndPrintNewTanker()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">حفظ وطباعة فورية</button>
+                <button onclick="closeNewTankerModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2.5 rounded-xl transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل بيانات حساب المدير المطور -->
+    <div id="editAdminModal" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4 text-right border-2 border-amber-500">
+            <h3 class="text-base font-bold text-amber-950 border-b pb-2 flex items-center gap-2">
+                👑 تعديل اسم المستخدم وكلمة المرور للمدير
+            </h3>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم الجديد للمدير (English)</label>
+                <input type="text" id="editAdminUsername" class="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور الجديدة للمدير</label>
+                <input type="text" id="editAdminPassword" class="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
+            </div>
+            <p class="text-[11px] text-amber-800 bg-amber-50 p-2 rounded border border-amber-200">
+                ⚠️ ينصح بحفظ وتذكر بيانات المدير المطور جيداً لتفادي فقدان التحكم بالنظام.
+            </p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="saveAdminAccountChanges()" class="w-1/2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">حفظ التغييرات</button>
+                <button onclick="closeEditAdminModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2.5 rounded-xl transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة / تعديل بيانات موظف البوابة -->
+    <div id="editStaffModal" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full space-y-4 text-right">
+            <h3 id="staffModalTitle" class="text-base font-bold text-slate-800 border-b pb-2">تعديل بيانات حساب موظف البوابة</h3>
+            <input type="hidden" id="editStaffKey">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">اسم الحساب (Login ID) - إنجليزي بدون مسافات</label>
+                <input type="text" id="editStaffUsername" placeholder="مثال: gate11" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">الاسم الثلاثي للموظف</label>
+                <input type="text" id="editStaffFullName" placeholder="الاسم الثلاثي الكامل..." class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">رقم الهاتف</label>
+                <input type="text" id="editStaffPhone" placeholder="09xxxxxxxx" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">بريد الجيميل (Gmail)</label>
+                <input type="email" id="editStaffEmail" placeholder="example@gmail.com" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">كلمة المرور</label>
+                <input type="text" id="editStaffPass" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="saveStaffChanges()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg transition">حفظ الحساب</button>
+                <button onclick="closeEditStaffModal()" class="w-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-2 rounded-lg transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLOUD_API_URL = "https://script.google.com/macros/s/AKfycbxVFiX_y9c_k4FHNFoFVOJAcJUjuz2NRMlSuwF5cLMm4tpsfZOZk6A8bMzGt_QcEmQC/exec";
+
+        function checkIsDesktopDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobile = /iphone|ipad|ipod|android|blackberry|mini|windows ce|palm/i.test(userAgent);
+            const isSmallScreen = window.innerWidth < 992;
+            
+            if (isMobile || isSmallScreen) {
+                document.getElementById('desktopOnlyBlocker').classList.remove('hidden');
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContent').classList.add('hidden');
+                return false;
+            }
+            return true;
+        }
+
+        window.addEventListener('resize', function() {
+            checkIsDesktopDevice();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || 
+               (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
+               (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        let adminUsername = localStorage.getItem('spc_admin_username') || "admin";
+        let adminPassword = localStorage.getItem('spc_admin_password') || "spc2026";
+
+        let currentUserRole = null; 
+        let currentGateUsername = "";
+        let currentGateUserFullName = "";
+
+        let printTurnCounter = parseInt(localStorage.getItem('spc_print_turn_counter')) || 1;
+
+        function getNextPrintTurnNumber() {
+            let current = printTurnCounter;
+            let next = current + 1;
+            if (next > 1000) {
+                next = 1;
+            }
+            printTurnCounter = next;
+            localStorage.setItem('spc_print_turn_counter', printTurnCounter.toString());
+            return current;
+        }
+
+        let staffAccounts = {
+            'gate1': { fullName: 'علي محمد علي', phone: '0955112233', email: 'ali.gate1@gmail.com', pass: 'gate2026' },
+            'gate2': { fullName: 'خالد احمد السعيد', phone: '0944223344', email: 'khaled.gate2@gmail.com', pass: 'gate2026' },
+            'gate3': { fullName: 'محمود جاسم الحسن', phone: '0933334455', email: 'mahmoud.gate3@gmail.com', pass: 'gate2026' },
+            'gate4': { fullName: 'يوسف ابراهيم العبدالله', phone: '0966445566', email: 'youssef.gate4@gmail.com', pass: 'gate2026' },
+            'gate5': { fullName: 'حسن حسين العلي', phone: '0988556677', email: 'hassan.gate5@gmail.com', pass: 'gate2026' },
+            'gate6': { fullName: 'عمر عبدالقادر العمر', phone: '0955667788', email: 'omar.gate6@gmail.com', pass: 'gate2026' },
+            'gate7': { fullName: 'سامر مصطفى المحمد', phone: '0944778899', email: 'samer.gate7@gmail.com', pass: 'gate2026' },
+            'gate8': { fullName: 'طارق زياد الفارس', phone: '0933889900', email: 'tarek.gate8@gmail.com', pass: 'gate2026' },
+            'gate9': { fullName: 'بشار مأمون الإبراهيم', phone: '0966990011', email: 'bashar.gate9@gmail.com', pass: 'gate2026' },
+            'gate10': { fullName: 'أحمد وليد الشامي', phone: '0988001122', email: 'ahmad.gate10@gmail.com', pass: 'gate2026' }
+        };
+
+        let auditLogs = [];
+
+        let cameraStream = null;
+        function initGateCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+                .then(stream => {
+                    cameraStream = stream;
+                    const video = document.getElementById('gateCameraVideo');
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(err => {
+                    console.log("تنبيه: الكاميرا غير متاحة أو تم رفض الإذن:", err);
+                });
+            }
+        }
+
+        function captureStaffPhoto() {
+            const video = document.getElementById('gateCameraVideo');
+            const canvas = document.getElementById('gateCameraCanvas');
+            if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.9);
+            }
+            return null;
+        }
+
+        window.onload = function() {
+            if (!checkIsDesktopDevice()) return;
+            initializeAppSession();
+            initGateCamera();
+            
+            fetchDataFromCloud(() => {
+                setInterval(fetchDataFromCloud, 2000);
+            });
+        };
+
+        // دالة المزامنة السحابية الفورية المعدلة بأسلوب URL Param الموثوق
+        function saveToCloud() {
+            const payload = {
+                convoys: globalConvoysArchive,
+                logs: auditLogs,
+                staff: staffAccounts,
+                counter: printTurnCounter
+            };
+
+            const jsonString = JSON.stringify(payload);
+            const encodedData = encodeURIComponent(jsonString);
+
+            fetch(CLOUD_API_URL + "?action=write&data=" + encodedData, {
+                method: "GET",
+                mode: "no-cors"
+            }).catch(err => console.log("خطأ في المزامنة:", err));
+        }
+
+        function fetchDataFromCloud(callback) {
+            if (!checkIsDesktopDevice()) return;
+            if (sessionStorage.getItem('spc_auth') !== 'true') return;
+
+            fetch(CLOUD_API_URL + "?action=read")
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.convoys) {
+                    if (JSON.stringify(data.convoys) !== JSON.stringify(globalConvoysArchive)) {
+                        globalConvoysArchive = data.convoys;
+                        if (globalConvoysArchive.length > 0) {
+                            const latest = globalConvoysArchive[0];
+                            tankersData = latest.tankers || [];
+                            emergencyData = latest.emergency || [];
+                            const infoEl = document.getElementById('gateActiveConvoyInfo');
+                            if (infoEl) {
+                                infoEl.innerText = `القافلة النشطة: تاريخ ${latest.date} | نظامي (${tankersData.length}) + طوارئ (${emergencyData.length}) (متصل بالسحابة ☁️)`;
+                            }
+                        } else {
+                            tankersData = [];
+                            emergencyData = [];
+                            const infoEl = document.getElementById('gateActiveConvoyInfo');
+                            if (infoEl) {
+                                infoEl.innerText = `القافلة النشطة: متصل بالسحابة ☁️ (لا توجد قوافل)`;
+                            }
+                        }
+                        renderTables();
+                        renderArchiveTable();
+                        renderConvoysArchive();
+                        renderGateSearch();
+                    }
+                }
+                if (data && data.logs && data.logs.length > auditLogs.length) {
+                    auditLogs = data.logs;
+                    renderAuditLogs();
+                }
+                if (data && data.counter) {
+                    printTurnCounter = data.counter;
+                }
+                if (callback) callback();
+            })
+            .catch(err => {
+                if (callback) callback();
+            });
+        }
+
+        function initializeAppSession() {
+            if (!checkIsDesktopDevice()) return;
+
+            const savedStaff = localStorage.getItem('spc_staff_accounts');
+            if (savedStaff) {
+                try { staffAccounts = JSON.parse(savedStaff); } catch(e){}
+            }
+            const savedLogs = localStorage.getItem('spc_audit_logs');
+            if (savedLogs) {
+                try { auditLogs = JSON.parse(savedLogs); } catch(e){}
+            }
+
+            adminUsername = localStorage.getItem('spc_admin_username') || "admin";
+            adminPassword = localStorage.getItem('spc_admin_password') || "spc2026";
+
+            if (sessionStorage.getItem('spc_auth') === 'true') {
+                currentUserRole = sessionStorage.getItem('spc_role') || 'admin';
+                currentGateUsername = sessionStorage.getItem('spc_username') || adminUsername;
+                
+                if (currentUserRole !== 'admin' && !staffAccounts[currentGateUsername]) {
+                    alert('⚠️ تنبيه أمني: تم حذف هذا الحساب من قِبل الإدارة. سيتم تسجيل الخروج فوراً.');
+                    lockSystem();
+                    return;
+                }
+
+                currentGateUserFullName = sessionStorage.getItem('spc_fullname') || 'محمد غياث المصري (أبو خالد) - المدير المطور';
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                applyRolePermissions();
+                loadSavedData();
+            } else {
+                document.getElementById('authModal').classList.remove('hidden');
+            }
+
+            document.getElementById('loginPass').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') attemptLogin();
+            });
+        }
+
+        function attemptLogin() {
+            const userIn = document.getElementById('loginUser').value.trim().toLowerCase();
+            const passIn = document.getElementById('loginPass').value.trim();
+            const err = document.getElementById('errorMsg');
+
+            adminUsername = localStorage.getItem('spc_admin_username') || "admin";
+            adminPassword = localStorage.getItem('spc_admin_password') || "spc2026";
+
+            if (userIn === adminUsername.toLowerCase() && passIn === adminPassword) {
+                currentUserRole = 'admin';
+                currentGateUsername = adminUsername;
+                currentGateUserFullName = 'محمد غياث المصري (أبو خالد) - المدير المطور';
+                completeLoginSession();
+                return;
+            }
+
+            if (staffAccounts[userIn] && (passIn === staffAccounts[userIn].pass || passIn === adminPassword)) {
+                currentUserRole = 'gate_employee';
+                currentGateUsername = userIn;
+                currentGateUserFullName = staffAccounts[userIn].fullName;
+                completeLoginSession();
+                return;
+            }
+
+            err.classList.remove('hidden');
+            document.getElementById('loginPass').value = '';
+        }
+
+        function completeLoginSession() {
+            sessionStorage.setItem('spc_auth', 'true');
+            sessionStorage.setItem('spc_role', currentUserRole);
+            sessionStorage.setItem('spc_username', currentGateUsername);
+            sessionStorage.setItem('spc_fullname', currentGateUserFullName);
+            
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('appContent').classList.remove('hidden');
+            
+            applyRolePermissions();
+            loadSavedData();
+        }
+
+        function applyRolePermissions() {
+            document.getElementById('userRoleDisplay').innerText = `الحساب النشط: ${currentGateUserFullName} (${currentGateUsername.toUpperCase()})`;
+            
+            const adminElements = document.querySelectorAll('.admin-only, .admin-only-section');
+            if (currentUserRole === 'gate_employee') {
+                adminElements.forEach(el => el.classList.add('hidden'));
+                switchTab('gate');
+            } else {
+                adminElements.forEach(el => el.classList.remove('hidden'));
+                switchTab('gate');
+            }
+
+            updateAdminCardDisplay();
+        }
+
+        function updateAdminCardDisplay() {
+            const u = document.getElementById('dispAdminUser');
+            if (u) u.innerText = localStorage.getItem('spc_admin_username') || "admin";
+        }
+
+        function openEditAdminModal() {
+            if (currentUserRole !== 'admin') return;
+            document.getElementById('editAdminUsername').value = localStorage.getItem('spc_admin_username') || "admin";
+            document.getElementById('editAdminPassword').value = localStorage.getItem('spc_admin_password') || "spc2026";
+            document.getElementById('editAdminModal').classList.remove('hidden');
+        }
+
+        function closeEditAdminModal() {
+            document.getElementById('editAdminModal').classList.add('hidden');
+        }
+
+        function saveAdminAccountChanges() {
+            if (currentUserRole !== 'admin') return;
+
+            const newU = document.getElementById('editAdminUsername').value.trim().toLowerCase();
+            const newP = document.getElementById('editAdminPassword').value.trim();
+
+            if (!newU || !newP) {
+                alert('يرجى كتابة اسم المستخدم وكلمة المرور الجديدة بشكل صحيح.');
+                return;
+            }
+
+            localStorage.setItem('spc_admin_username', newU);
+            localStorage.setItem('spc_admin_password', newP);
+
+            adminUsername = newU;
+            adminPassword = newP;
+
+            if (currentUserRole === 'admin') {
+                currentGateUsername = newU;
+                sessionStorage.setItem('spc_username', newU);
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            auditLogs.unshift({
+                timestamp: timeStr,
+                staffName: currentGateUserFullName,
+                staffAccount: currentGateUsername,
+                carNumber: "---",
+                driverName: "---",
+                serial: "SYS-ADMIN-UPDATE",
+                staffPhoto: null,
+                action: `تعديل اسم المستخدم وكلمة المرور للمدير المطور إلى (${newU})`
+            });
+            saveToCloud();
+
+            updateAdminCardDisplay();
+            renderAuditLogs();
+            closeEditAdminModal();
+            alert('تم حفظ بيانات دخول المدير المطور بنجاح!');
+        }
+
+        function loadSavedData() {
+            const savedConvoys = localStorage.getItem('spc_convoys_archive');
+            if (savedConvoys) {
+                try {
+                    globalConvoysArchive = JSON.parse(savedConvoys);
+                } catch(e) {
+                    globalConvoysArchive = [];
+                }
+            }
+            if (globalConvoysArchive.length > 0) {
+                const latest = globalConvoysArchive[0];
+                tankersData = latest.tankers || [];
+                emergencyData = latest.emergency || [];
+                document.getElementById('gateActiveConvoyInfo').innerText = `القافلة النشطة: تاريخ ${latest.date} | نظامي (${tankersData.length}) + طوارئ (${emergencyData.length})`;
+            }
+            renderTables();
+            renderArchiveTable();
+            renderConvoysArchive();
+            renderGateSearch();
+            renderStaffManagement();
+            renderAuditLogs();
+        }
+
+        function lockSystem() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+            sessionStorage.clear();
+            window.location.reload();
+        }
+
+        let tankersData = [];
+        let emergencyData = [];
+        let globalConvoysArchive = [];
+
+        function switchTab(tab) {
+            fetchDataFromCloud();
+
+            document.getElementById('tabGate').classList.add('hidden');
+            const p = document.getElementById('tabProcessor');
+            const c = document.getElementById('tabConvoysArchive');
+            const s = document.getElementById('tabStaffManagement');
+            const l = document.getElementById('tabAuditLogs');
+            const a = document.getElementById('tabArchive');
+            if(p) p.classList.add('hidden');
+            if(c) c.classList.add('hidden');
+            if(s) s.classList.add('hidden');
+            if(l) l.classList.add('hidden');
+            if(a) a.classList.add('hidden');
+
+            const tabBtns = ['btnTabGate', 'btnTabProcessor', 'btnTabConvoysArchive', 'btnTabStaffManagement', 'btnTabAuditLogs', 'btnTabArchive'];
+            tabBtns.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = "bg-white text-slate-700 hover:bg-slate-100 font-bold px-3 py-2.5 rounded-lg text-xs border shadow-sm transition";
+            });
+
+            if (tab === 'gate') {
+                document.getElementById('tabGate').classList.remove('hidden');
+                document.getElementById('btnTabGate').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+                renderGateSearch();
+            } else if (tab === 'processor' && currentUserRole === 'admin') {
+                p.classList.remove('hidden');
+                document.getElementById('btnTabProcessor').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+            } else if (tab === 'convoysArchive' && currentUserRole === 'admin') {
+                c.classList.remove('hidden');
+                document.getElementById('btnTabConvoysArchive').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+                renderConvoysArchive();
+            } else if (tab === 'staffManagement' && currentUserRole === 'admin') {
+                s.classList.remove('hidden');
+                document.getElementById('btnTabStaffManagement').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+            } else if (tab === 'auditLogs' && currentUserRole === 'admin') {
+                l.classList.remove('hidden');
+                document.getElementById('btnTabAuditLogs').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+                renderAuditLogs();
+            } else if (tab === 'archive' && currentUserRole === 'admin') {
+                a.classList.remove('hidden');
+                document.getElementById('btnTabArchive').className = "bg-blue-700 text-white font-bold px-3 py-2.5 rounded-lg text-xs shadow transition";
+                renderArchiveTable();
+            }
+        }
+
+        function exportDailyGateExcelReport() {
+            if (currentUserRole !== 'admin') return;
+
+            let allGateEntries = [];
+            globalConvoysArchive.forEach(c => {
+                const combined = [...c.tankers, ...c.emergency];
+                combined.forEach(t => {
+                    if (t.entryTime && t.entryTime !== "") {
+                        allGateEntries.push({
+                            "تاريخ ووقت الدخول": t.entryTime,
+                            "رقم الدور": t.printTurnNumber || "---",
+                            "اسم السائق": t.driverName,
+                            "رقم السيارة (النمرة)": t.carNumber,
+                            "نوع الصهريج": t.type,
+                            "رمز المذكرة": t.serial,
+                            "الحقل / المواصلات": t.field || t.routes || "---",
+                            "مكان التفريغ": t.unloadPlace || "حمص",
+                            "موظف البوابة المنفذ": t.entryGateStaff || "غير محدد"
+                        });
+                    }
+                });
+            });
+
+            if (allGateEntries.length === 0) {
+                alert('لا توجد صهاريج دخلت البوابة وتملك سجل دخول حالياً لتصدير التقرير.');
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(allGateEntries);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "حركة الدخول اليومية");
+            
+            const dateStr = new Date().toLocaleDateString('ar-GB').replace(/\//g, '-');
+            XLSX.writeFile(wb, `تقرير_دخول_البوابة_اليومي_${dateStr}.xlsx`);
+        }
+
+        function downloadEnvelopeExcel(convoy) {
+            if (currentUserRole !== 'admin') return;
+            if (!convoy) return;
+
+            const allList = [...convoy.tankers, ...convoy.emergency];
+            let totalWeightKg = 0;
+            convoy.tankers.forEach(t => {
+                const w = parseFloat(String(t.weightKg).replace(/,/g, ''));
+                if (!isNaN(w)) totalWeightKg += w;
+            });
+
+            let excelRows = [
+                ["الجمهورية العربية السورية - الشركة السورية للبترول (إدارة المنطقة الوسطى)"],
+                ["📄 واجهة ظرف مذكرات التفريغ (الإحصائية الإلكترونية)"],
+                ["تاريخ الانطلاق:", convoy.date, "الحقل المصدر:", convoy.field],
+                ["مكان التفريغ المستهدف:", convoy.unloadPlace, "الشركة الناقلة:", convoy.transCompany],
+                ["إجمالي الصهاريج النظامية:", convoy.tankers.length, "صهاريج الطوارئ:", convoy.emergency?.length || 0],
+                ["إجمالي المذكرات:", allList.length, "إجمالي وزن التحميل:", totalWeightKg > 0 ? totalWeightKg.toLocaleString() + ' kg' : '---'],
+                []
+            ];
+
+            excelRows.push(["م", "نوع الصهريج", "اسم السائق", "رقم السيارة (النمرة)", "رمز المذكرة التسلسلي", "حالة دخول البوابة"]);
+
+            allList.forEach((t, idx) => {
+                excelRows.push([
+                    idx + 1,
+                    t.type,
+                    t.driverName,
+                    t.carNumber,
+                    t.serial,
+                    t.entryTime ? `دخل (${t.entryTime})` : "بانتظار الدخول"
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(excelRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "واجهة الظرف الإحصائية");
+
+            const safeDate = convoy.date.replace(/\//g, '-');
+            XLSX.writeFile(wb, `واجهة_الظرف_الإحصائية_${safeDate}.xlsx`);
+        }
+
+        function downloadCurrentEnvelopeExcel() {
+            if (currentUserRole !== 'admin') return;
+            if (tankersData.length === 0 && emergencyData.length === 0) {
+                alert('لا توجد بيانات قافلة حالية');
+                return;
+            }
+            const tempConvoy = {
+                date: tankersData[0]?.dispatchDate || '27/10/2026',
+                field: tankersData[0]?.field || 'رميلان',
+                unloadPlace: tankersData[0]?.unloadPlace || 'حمص',
+                transCompany: tankersData[0]?.transCompany || 'شركة سيلك',
+                tankers: tankersData,
+                emergency: emergencyData
+            };
+            downloadEnvelopeExcel(tempConvoy);
+        }
+
+        function downloadConvoyArchiveEnvelopeExcel(id) {
+            if (currentUserRole !== 'admin') return;
+            const convoy = globalConvoysArchive.find(c => c.id === id);
+            if (!convoy) return;
+            downloadEnvelopeExcel(convoy);
+        }
+
+        function openNewTankerModal() {
+            if (currentUserRole !== 'admin') return;
+            document.getElementById('newDriverName').value = '';
+            document.getElementById('newCarNumber').value = '';
+            document.getElementById('newTankerModal').classList.remove('hidden');
+        }
+
+        function closeNewTankerModal() {
+            document.getElementById('newTankerModal').classList.add('hidden');
+        }
+
+        function saveAndPrintNewTanker() {
+            if (currentUserRole !== 'admin') return;
+            const driver = document.getElementById('newDriverName').value.trim();
+            const carNum = document.getElementById('newCarNumber').value.trim();
+            const carType = document.getElementById('newCarType').value.trim();
+            const weight = document.getElementById('newWeight').value.trim();
+            const field = document.getElementById('newField').value.trim();
+            const unload = document.getElementById('newUnload').value.trim();
+            const trans = document.getElementById('newTrans').value.trim();
+
+            if (!driver || !carNum) {
+                alert('يرجى إدخال اسم السائق ورقم السيارة على الأقل.');
+                return;
+            }
+
+            const staffPhotoBase64 = captureStaffPhoto();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ar-GB');
+            const timeStr = dateStr + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            const assignedTurn = getNextPrintTurnNumber();
+
+            const newItem = {
+                serial: generateUniqueSerial(tankersData.length, 'SPC-EXT'),
+                rowNum: tankersData.length + 1,
+                printTurnNumber: assignedTurn,
+                type: 'خارج القافلة',
+                driverName: driver,
+                carType: carType,
+                carNumber: carNum,
+                weightKg: weight,
+                field: field,
+                unloadPlace: unload,
+                transCompany: trans,
+                dispatchDate: dateStr,
+                entryTime: timeStr,
+                entryGateStaff: currentGateUserFullName
+            };
+
+            tankersData.unshift(newItem);
+
+            if (globalConvoysArchive.length > 0) {
+                globalConvoysArchive[0].tankers = tankersData;
+            }
+
+            auditLogs.unshift({
+                timestamp: timeStr,
+                staffName: currentGateUserFullName,
+                staffAccount: currentGateUsername,
+                carNumber: carNum,
+                driverName: driver,
+                serial: newItem.serial,
+                staffPhoto: staffPhotoBase64,
+                action: `إنشاء مذكرة صهريج جديد وطباعتها (رقم الدور: ${assignedTurn})`
+            });
+            
+            saveToCloud();
+
+            closeNewTankerModal();
+            renderGateSearch();
+            renderTables();
+            renderArchiveTable();
+            renderAuditLogs();
+
+            renderCards([newItem]);
+            setTimeout(() => { window.print(); }, 150);
+        }
+
+        function deleteTankerBySerial(serial) {
+            if (currentUserRole !== 'admin') return;
+            if (confirm(`هل أنت متأكد تماماً من حذف الصهريج ذو الرقم التسلسلي (${serial})؟`)) {
+                tankersData = tankersData.filter(t => t.serial !== serial);
+                emergencyData = emergencyData.filter(t => t.serial !== serial);
+
+                if (globalConvoysArchive.length > 0) {
+                    globalConvoysArchive[0].tankers = tankersData;
+                    globalConvoysArchive[0].emergency = emergencyData;
+                }
+
+                saveToCloud();
+
+                renderGateSearch();
+                renderTables();
+                renderArchiveTable();
+                alert('تم حذف الصهريج بنجاح.');
+            }
+        }
+
+        function renderGateSearch() {
+            const tbody = document.getElementById('gateTableBody');
+            tbody.innerHTML = '';
+
+            const allList = [...tankersData, ...emergencyData];
+            const query = document.getElementById('gateSearchInput') ? document.getElementById('gateSearchInput').value.trim().toLowerCase() : '';
+
+            const filtered = allList.filter(item => {
+                return item.carNumber.toLowerCase().includes(query) ||
+                       item.driverName.toLowerCase().includes(query) ||
+                       item.serial.toLowerCase().includes(query);
+            });
+
+            if (allList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد صهاريج في النظام حالياً. يرجى الانتظار حتى يقوم المدير بمعالجة القافلة سحابياً.</td></tr>`;
+                document.getElementById('gateResultsCount').innerText = `إجمالي الصهاريج المتاحة للبوابة: 0`;
+                return;
+            }
+
+            filtered.forEach((t) => {
+                const isEmergency = t.type === 'طوارئ';
+                const hasEntered = t.entryTime && t.entryTime !== "";
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${t.rowNum}</td>
+                    <td class="p-3 font-mono text-blue-700 font-bold">${t.serial}</td>
+                    <td class="p-3 font-bold ${isEmergency ? 'text-rose-700' : 'text-emerald-700'}">${t.type}</td>
+                    <td class="p-3 font-semibold">${t.driverName}</td>
+                    <td class="p-3 font-black text-blue-900 text-sm">${t.carNumber}</td>
+                    <td class="p-3 font-bold">${isEmergency ? t.routes : t.weightKg + ' kg'}</td>
+                    <td class="p-3">
+                        ${hasEntered ? 
+                            `<span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-bold text-[11px] block text-center">تم الدخول ✓<br><span class="text-[9px] font-mono">${t.entryTime}</span></span>` : 
+                            `<span class="bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold text-[11px] block text-center">بانتظار الدخول</span>`
+                        }
+                    </td>
+                    <td class="p-3 text-center flex justify-center items-center gap-1">
+                        <button onclick="promptPrintConfirmation('${t.serial}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
+                            🖨️ طباعة المذكرة
+                        </button>
+                        ${currentUserRole === 'admin' ? `
+                        <button onclick="deleteTankerBySerial('${t.serial}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1.5 rounded-lg text-xs font-bold shadow transition">
+                            🗑️
+                        </button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('gateResultsCount').innerText = `إجمالي الصهاريج المطابقة للبحث: ${filtered.length} (نظامي: ${tankersData.length} | طوارئ: ${emergencyData.length})`;
+        }
+
+        function promptPrintConfirmation(serial) {
+            fetchDataFromCloud(() => {
+                let foundItem = null;
+                const allCurrent = [...tankersData, ...emergencyData];
+                foundItem = allCurrent.find(i => i.serial === serial);
+
+                if (!foundItem) {
+                    globalConvoysArchive.forEach(c => {
+                        const all = [...c.tankers, ...c.emergency];
+                        const match = all.find(i => i.serial === serial);
+                        if (match) foundItem = match;
+                    });
+                }
+
+                if (!foundItem) {
+                    alert('عذراً، لم يتم العثور على المذكرة المطلوبة.');
+                    return;
+                }
+
+                document.getElementById('confTargetSerial').value = foundItem.serial;
+                document.getElementById('confCarNum').innerText = foundItem.carNumber;
+                document.getElementById('confDriverName').innerText = foundItem.driverName;
+                document.getElementById('confSerial').innerText = foundItem.serial;
+                document.getElementById('printConfirmModal').classList.remove('hidden');
+            });
+        }
+
+        function closePrintConfirmModal() {
+            document.getElementById('printConfirmModal').classList.add('hidden');
+        }
+
+        function confirmAndExecutePrint() {
+            const serial = document.getElementById('confTargetSerial').value;
+            closePrintConfirmModal();
+
+            let foundItem = null;
+            let targetConvoyRef = null;
+
+            const allCurrent = [...tankersData, ...emergencyData];
+            foundItem = allCurrent.find(i => i.serial === serial);
+
+            if (!foundItem) {
+                globalConvoysArchive.forEach(c => {
+                    const all = [...c.tankers, ...c.emergency];
+                    const match = all.find(i => i.serial === serial);
+                    if (match) {
+                        foundItem = match;
+                        targetConvoyRef = c;
+                    }
+                });
+            } else {
+                if (globalConvoysArchive.length > 0) targetConvoyRef = globalConvoysArchive[0];
+            }
+
+            if (!foundItem) return;
+
+            const staffPhotoBase64 = captureStaffPhoto();
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            foundItem.entryTime = timeStr;
+            foundItem.entryGateStaff = currentGateUserFullName;
+
+            if (!foundItem.printTurnNumber) {
+                foundItem.printTurnNumber = getNextPrintTurnNumber();
+            }
+
+            auditLogs.unshift({
+                timestamp: timeStr,
+                staffName: currentGateUserFullName,
+                staffAccount: currentGateUsername,
+                carNumber: foundItem.carNumber,
+                driverName: foundItem.driverName,
+                serial: foundItem.serial,
+                staffPhoto: staffPhotoBase64,
+                action: `تأكيد دخول صهريج وطباعة مذكرة (رقم الدور: ${foundItem.printTurnNumber})`
+            });
+            
+            saveToCloud();
+
+            renderGateSearch();
+            renderArchiveTable();
+            renderAuditLogs();
+
+            renderCards([foundItem]);
+            setTimeout(() => { window.print(); }, 100);
+        }
+
+        function renderStaffManagement() {
+            if (currentUserRole !== 'admin') return;
+
+            const tbody = document.getElementById('staffTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            Object.keys(staffAccounts).forEach(key => {
+                const acc = staffAccounts[key];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold font-mono text-blue-800">${key.toUpperCase()}</td>
+                    <td class="p-3 font-bold text-slate-800">${acc.fullName}</td>
+                    <td class="p-3 font-mono">${acc.phone}</td>
+                    <td class="p-3 font-mono text-slate-600">${acc.email}</td>
+                    <td class="p-3 font-mono tracking-widest">${acc.pass}</td>
+                    <td class="p-3 text-center flex justify-center gap-2">
+                        <button onclick="openEditStaffModal('${key}')" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
+                            ✏️ تعديل
+                        </button>
+                        <button onclick="deleteStaffAccount('${key}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
+                            🗑️ حذف
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAddStaffModal() {
+            if (currentUserRole !== 'admin') return;
+            document.getElementById('staffModalTitle').innerText = '➕ إضافة حساب موظف بوابة جديد';
+            document.getElementById('editStaffKey').value = '';
+            document.getElementById('editStaffUsername').value = '';
+            document.getElementById('editStaffUsername').disabled = false;
+            document.getElementById('editStaffFullName').value = '';
+            document.getElementById('editStaffPhone').value = '';
+            document.getElementById('editStaffEmail').value = '';
+            document.getElementById('editStaffPass').value = 'gate2026';
+            document.getElementById('editStaffModal').classList.remove('hidden');
+        }
+
+        function openEditStaffModal(key) {
+            if (currentUserRole !== 'admin') return;
+            const acc = staffAccounts[key];
+            if (!acc) return;
+            document.getElementById('staffModalTitle').innerText = `✏️ تعديل بيانات الحساب (${key.toUpperCase()})`;
+            document.getElementById('editStaffKey').value = key;
+            document.getElementById('editStaffUsername').value = key;
+            document.getElementById('editStaffUsername').disabled = true;
+            document.getElementById('editStaffFullName').value = acc.fullName;
+            document.getElementById('editStaffPhone').value = acc.phone;
+            document.getElementById('editStaffEmail').value = acc.email;
+            document.getElementById('editStaffPass').value = acc.pass;
+            document.getElementById('editStaffModal').classList.remove('hidden');
+        }
+
+        function closeEditStaffModal() {
+            document.getElementById('editStaffModal').classList.add('hidden');
+        }
+
+        function saveStaffChanges() {
+            if (currentUserRole !== 'admin') return;
+
+            const editKey = document.getElementById('editStaffKey').value;
+            const usernameInput = document.getElementById('editStaffUsername').value.trim().toLowerCase();
+            const fullName = document.getElementById('editStaffFullName').value.trim();
+            const phone = document.getElementById('editStaffPhone').value.trim();
+            const email = document.getElementById('editStaffEmail').value.trim();
+            const pass = document.getElementById('editStaffPass').value.trim();
+
+            if (!fullName || !pass) {
+                alert('يرجى إدخال الاسم الثلاثي وكلمة المرور.');
+                return;
+            }
+
+            if (editKey === '') {
+                if (!usernameInput) {
+                    alert('يرجى إدخال اسم الحساب (Login ID).');
+                    return;
+                }
+                adminUsername = localStorage.getItem('spc_admin_username') || "admin";
+                if (staffAccounts[usernameInput] || usernameInput === adminUsername.toLowerCase()) {
+                    alert('اسم الحساب هذا مستخدم سابقاً، يرجى اختيار اسم آخر.');
+                    return;
+                }
+                staffAccounts[usernameInput] = { fullName, phone, email, pass };
+                alert('تمت إضافة حساب الموظف الجديد بنجاح!');
+            } else {
+                if (!staffAccounts[editKey]) return;
+                staffAccounts[editKey] = { fullName, phone, email, pass };
+                alert('تم تحديث بيانات حساب الموظف بنجاح!');
+            }
+
+            saveToCloud();
+            renderStaffManagement();
+            closeEditStaffModal();
+        }
+
+        function deleteStaffAccount(key) {
+            if (currentUserRole !== 'admin') return;
+            if (confirm(`هل أنت متأكد تماماً من حذف حساب الموظف (${staffAccounts[key]?.fullName} - ${key.toUpperCase()})؟\nسيتم طرد هذا الموظف فوراً ولن يتمكن من استخدام النظام على جهازه.`)) {
+                delete staffAccounts[key];
+                
+                const now = new Date();
+                const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                auditLogs.unshift({
+                    timestamp: timeStr,
+                    staffName: currentGateUserFullName,
+                    staffAccount: currentGateUsername,
+                    carNumber: "---",
+                    driverName: "---",
+                    serial: "SYS-REVOKE",
+                    staffPhoto: null,
+                    action: `حذف حساب الموظف (${key.toUpperCase()}) وطرده فورياً من النظام`
+                });
+                saveToCloud();
+
+                renderStaffManagement();
+                renderAuditLogs();
+                alert('تم حذف الحساب بنجاح.');
+            }
+        }
+
+        function renderAuditLogs() {
+            if (currentUserRole !== 'admin') return;
+
+            const tbody = document.getElementById('auditLogTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (auditLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-400">لا توجد سجلات حركات دخول بعد.</td></tr>`;
+                return;
+            }
+
+            auditLogs.forEach((log, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                
+                let photoActionHtml = `<span class="text-slate-400 text-[10px]">بدون صورة</span>`;
+                if (log.staffPhoto) {
+                    photoActionHtml = `
+                        <button onclick="openViewStaffPhotoModal(${index})" class="bg-blue-700 hover:bg-blue-800 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1 mx-auto">
+                            📷 فتح الصورة
+                        </button>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 font-mono text-xs">${log.timestamp}</td>
+                    <td class="p-3 text-center">${photoActionHtml}</td>
+                    <td class="p-3 font-bold text-blue-900">${log.staffName}</td>
+                    <td class="p-3 font-mono font-bold">${log.staffAccount.toUpperCase()}</td>
+                    <td class="p-3 font-black text-amber-900 text-sm">${log.carNumber}</td>
+                    <td class="p-3">${log.driverName}</td>
+                    <td class="p-3 font-mono text-xs">${log.serial}</td>
+                    <td class="p-3 font-bold text-emerald-700">${log.action}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openViewStaffPhotoModal(index) {
+            if (currentUserRole !== 'admin') return;
+            const log = auditLogs[index];
+            if (!log || !log.staffPhoto) return;
+
+            document.getElementById('modalStaffPhotoImg').src = log.staffPhoto;
+            document.getElementById('modalStaffName').innerText = log.staffName;
+            document.getElementById('modalStaffTime').innerText = log.timestamp;
+            document.getElementById('modalStaffCar').innerText = log.carNumber + ' (المذكرة: ' + log.serial + ')';
+            document.getElementById('viewStaffPhotoModal').classList.remove('hidden');
+        }
+
+        function closeViewStaffPhotoModal() {
+            document.getElementById('viewStaffPhotoModal').classList.add('hidden');
+        }
+
+        function clearAuditLogs() {
+            if (currentUserRole !== 'admin') return;
+            if (confirm('هل أنت متأكد من مسح جميع سجلات مراقبة الموظفين؟')) {
+                auditLogs = [];
+                saveToCloud();
+                renderAuditLogs();
+            }
+        }
+
+        function generateUniqueSerial(index, type = 'SPC') {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const seq = String(index + 1).padStart(3, '0');
+            const rand = Math.floor(100 + Math.random() * 900);
+            return `${type}-${yyyy}${mm}${dd}-${hh}${min}${ss}-${seq}-${rand}`;
+        }
+
+        function excelDateToJSDate(serial) {
+            if (!serial) return "27/10/2026";
+            if (typeof serial === 'string' && serial.includes('/')) return serial;
+            const num = parseFloat(serial);
+            if (isNaN(num)) return String(serial);
+            const utc_days = Math.floor(num - 25569);
+            const utc_value = utc_days * 86400;
+            const date_info = new Date(utc_value * 1000);
+            const day = String(date_info.getDate()).padStart(2, '0');
+            const month = String(date_info.getMonth() + 1).padStart(2, '0');
+            const year = date_info.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function processExcel() {
+            if (currentUserRole !== 'admin') return;
+
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('يرجى اختيار ملف إكسل القافلة أولاً');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                tankersData = [];
+                emergencyData = [];
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rawMatrix = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+
+                    if (!rawMatrix || rawMatrix.length === 0) return;
+
+                    let globalDate = "27/10/2026";
+                    for (let r = 0; r < rawMatrix.length; r++) {
+                        for (let c = 0; c < rawMatrix[r].length; c++) {
+                            const cellStr = String(rawMatrix[r][c]);
+                            if (cellStr.includes("التاريخ") && rawMatrix[r][c+1]) {
+                                globalDate = excelDateToJSDate(rawMatrix[r][c+1]);
+                            }
+                        }
+                    }
+
+                    let isReadingSystematic = false;
+                    let isReadingEmergency = false;
+                    let tempConvoyTankers = [];
+                    let tempConvoyEmergency = [];
+
+                    for (let r = 0; r < rawMatrix.length; r++) {
+                        const row = rawMatrix[r];
+                        const colA = String(row[0] || "").trim();
+                        const colB = String(row[1] || "").trim(); 
+                        const carNum = String(row[3] || "").trim(); 
+                        const rowText = row.join(" ").toLowerCase();
+
+                        if (colA.includes("طوارئ") || rowText.includes("طوارئ") || rowText.includes("معلومات صهاريج الطوارئ")) {
+                            isReadingSystematic = false;
+                            isReadingEmergency = true;
+                            continue;
+                        }
+
+                        if (colB.includes("اسم السائق")) {
+                            if (isReadingEmergency) continue;
+                            isReadingSystematic = true;
+                            continue;
+                        }
+
+                        if (isReadingEmergency) {
+                            if (colB === "" || colB.includes("الترفيق") || colB.includes("ترحيلات النفط") || rowText.includes("الترفيق")) {
+                                isReadingEmergency = false;
+                                continue;
+                            }
+                            let driver = colB;
+                            let carNumVal = "";
+                            for (let c = 2; c < row.length; c++) {
+                                let val = String(row[c] || "").trim();
+                                if (/^\d{4,6}$/.test(val)) {
+                                    carNumVal = val;
+                                    break;
+                                }
+                            }
+                            if (!carNumVal) {
+                                carNumVal = String(row[5] || row[3] || row[4] || "").trim();
+                            }
+
+                            if (driver && driver !== "اسم السائق" && carNumVal && carNumVal !== "---") {
+                                const exists = tempConvoyEmergency.some(e => e.carNumber === carNumVal);
+                                if (!exists) {
+                                    const emergencyItem = {
+                                        serial: generateUniqueSerial(tempConvoyEmergency.length, 'EMG'),
+                                        rowNum: tempConvoyEmergency.length + 1,
+                                        type: 'طوارئ',
+                                        driverName: driver,
+                                        phone: String(row[2] || "---"),
+                                        carType: String(row[3] || "فولفو"),
+                                        carNumber: carNumVal,
+                                        routes: String(row[4] || row[5] || "---"),
+                                        tankerKiloo: String(row[6] || "45"),
+                                        transCompany: String(row[7] || "سيلك"),
+                                        dispatchDate: globalDate,
+                                        entryTime: "",
+                                        entryGateStaff: ""
+                                    };
+                                    tempConvoyEmergency.push(emergencyItem);
+                                }
+                            }
+                            continue;
+                        }
+
+                        if (isReadingSystematic) {
+                            if (colB === "" || colB.includes("العدد") || colB.includes("المجموع") || rowText.includes("الترفيق") || rowText.includes("ترحيلات النفط")) {
+                                isReadingSystematic = false;
+                                continue;
+                            }
+
+                            if (!carNum || carNum === "" || carNum === "---") {
+                                continue;
+                            }
+
+                            const tankerItem = {
+                                serial: generateUniqueSerial(tempConvoyTankers.length, 'SPC'),
+                                rowNum: colA !== "" && !colA.includes("طوارئ") ? colA : (tempConvoyTankers.length + 1),
+                                type: 'نظامي',
+                                driverName: colB,
+                                carType: row[2] !== undefined && row[2] !== "" ? String(row[2]).trim() : "*/*/*/*/*/*",
+                                carNumber: carNum,
+                                weightKg: row[4] !== undefined && row[4] !== "" ? String(row[4]).trim() : "---",
+                                field: row[5] !== undefined && row[5] !== "" ? String(row[5]).trim() : "رميلان",
+                                unloadPlace: row[6] !== undefined && row[6] !== "" ? String(row[6]).trim() : "حمص",
+                                transCompany: row[7] !== undefined && row[7] !== "" ? String(row[7]).trim() : "شركة سيلك",
+                                dispatchDate: globalDate,
+                                entryTime: "",
+                                entryGateStaff: ""
+                            };
+
+                            tempConvoyTankers.push(tankerItem);
+                        }
+                    }
+
+                    tankersData = tempConvoyTankers;
+                    emergencyData = tempConvoyEmergency;
+                });
+
+                if (tankersData.length === 0 && emergencyData.length === 0) {
+                    alert('تعذر قراءة الصهاريج، يرجى التأكد من أن الملف يحتوي على أرقام سيارات صحيحة.');
+                    return;
+                }
+
+                const convoyObj = {
+                    id: 'CONVOY-' + Date.now(),
+                    date: tankersData.length > 0 ? tankersData[0].dispatchDate : '27/10/2026',
+                    field: tankersData.length > 0 ? tankersData[0].field : 'رميلان',
+                    unloadPlace: tankersData[0]?.unloadPlace || 'حمص',
+                    transCompany: tankersData[0]?.transCompany || 'شركة سيلك',
+                    tankers: tankersData,
+                    emergency: emergencyData
+                };
+
+                globalConvoysArchive.unshift(convoyObj);
+                
+                saveToCloud();
+
+                renderTables();
+                renderCards([...tankersData, ...emergencyData]);
+                renderArchiveTable();
+                renderConvoysArchive();
+                renderGateSearch();
+
+                document.getElementById('gateActiveConvoyInfo').innerText = `القافلة النشطة: تاريخ ${convoyObj.date} | نظامي (${tankersData.length}) + طوارئ (${emergencyData.length}) (متصل بالسحابة ☁️)`;
+                alert(`تمت معالجة القافلة ورفعها للسحابة بنجاح: ${tankersData.length} صهريج نظامي و ${emergencyData.length} صهريج طوارئ!`);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('.tanker-row-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+
+        function renderTables() {
+            if (currentUserRole !== 'admin') return;
+
+            const tbody = document.getElementById('tankersTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            tankersData.forEach((t) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-center"><input type="checkbox" value="${t.serial}" class="tanker-row-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500"></td>
+                    <td class="p-3 font-bold">${t.rowNum}</td>
+                    <td class="p-3 font-mono text-blue-700 font-bold">${t.serial}</td>
+                    <td class="p-3 font-semibold">${t.driverName}</td>
+                    <td class="p-3">${t.carType}</td>
+                    <td class="p-3 font-bold">${t.carNumber}</td>
+                    <td class="p-3 text-emerald-700 font-bold">${t.weightKg}</td>
+                    <td class="p-3">${t.field}</td>
+                    <td class="p-3 text-center flex justify-center gap-1">
+                        <button onclick="promptPrintConfirmation('${t.serial}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                            🖨️ طباعة
+                        </button>
+                        <button onclick="deleteTankerBySerial('${t.serial}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-xs">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const emgTbody = document.getElementById('emergencyTableBody');
+            if(emgTbody) {
+                emgTbody.innerHTML = '';
+                if(emergencyData.length === 0) {
+                    emgTbody.innerHTML = `<tr><td colspan="8" class="text-center p-4 text-slate-400">لا توجد صهاريج طوارئ في هذا الملف.</td></tr>`;
+                } else {
+                    emergencyData.forEach((t) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-rose-50/50 transition";
+                        tr.innerHTML = `
+                            <td class="p-3 text-center"><input type="checkbox" value="${t.serial}" class="tanker-row-checkbox w-4 h-4 rounded text-rose-600 focus:ring-rose-500"></td>
+                            <td class="p-3 font-bold">${t.rowNum}</td>
+                            <td class="p-3 font-mono text-rose-700 font-bold">${t.serial}</td>
+                            <td class="p-3 font-semibold">${t.driverName}</td>
+                            <td class="p-3 font-mono">${t.phone}</td>
+                            <td class="p-3 font-black text-rose-900 text-sm">${t.carNumber}</td>
+                            <td class="p-3 font-bold">${t.routes}</td>
+                            <td class="p-3 text-center flex justify-center gap-1">
+                                <button onclick="promptPrintConfirmation('${t.serial}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-xs font-bold shadow">
+                                    🖨️ طوارئ
+                                </button>
+                                <button onclick="deleteTankerBySerial('${t.serial}')" class="bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded text-xs">
+                                    🗑️
+                                </button>
+                            </td>
+                        `;
+                        emgTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            document.getElementById('emergencyCountBadge').innerText = emergencyData.length;
+            document.getElementById('tankerCount').innerText = tankersData.length + emergencyData.length;
+            document.getElementById('batchActions').classList.remove('hidden');
+            document.getElementById('tableContainer').classList.remove('hidden');
+        }
+
+        function printSelectedTankers() {
+            if (currentUserRole !== 'admin') return;
+            const selectedCheckboxes = document.querySelectorAll('.tanker-row-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('يرجى تحديد صهريج واحد على الأقل من الجداول للطباعة.');
+                return;
+            }
+            const selectedSerials = Array.from(selectedCheckboxes).map(cb => cb.value);
+            const allList = [...tankersData, ...emergencyData];
+            const itemsToPrint = allList.filter(t => selectedSerials.includes(t.serial));
+
+            const staffPhotoBase64 = captureStaffPhoto();
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+
+            itemsToPrint.forEach(foundItem => {
+                foundItem.entryTime = timeStr;
+                foundItem.entryGateStaff = currentGateUserFullName;
+                if (!foundItem.printTurnNumber) {
+                    foundItem.printTurnNumber = getNextPrintTurnNumber();
+                }
+            });
+
+            if (globalConvoysArchive.length > 0) {
+                saveToCloud();
+            }
+
+            renderGateSearch();
+            renderArchiveTable();
+
+            renderCards(itemsToPrint);
+            setTimeout(() => { window.print(); }, 200);
+        }
+
+        function renderConvoysArchive() {
+            if (currentUserRole !== 'admin') return;
+
+            const container = document.getElementById('convoysListContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const query = document.getElementById('convoySearchInput') ? document.getElementById('convoySearchInput').value.trim().toLowerCase() : '';
+
+            const filtered = globalConvoysArchive.filter(c => {
+                return c.date.toLowerCase().includes(query) ||
+                       c.field.toLowerCase().includes(query) ||
+                       c.unloadPlace.toLowerCase().includes(query);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 p-8">لا توجد قوافل مؤرشفة بعد أو لا توجد نتائج مطابقة للبحث.</div>';
+                return;
+            }
+
+            filtered.forEach((convoy) => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-50 border-2 border-slate-300 rounded-xl p-4 shadow-sm space-y-3";
+                div.innerHTML = `
+                    <div class="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+                        <div>
+                            <span class="bg-blue-900 text-white text-xs px-2.5 py-1 rounded-lg font-bold">قافلة</span>
+                            <span class="font-bold text-slate-800 mr-2">تاريخ الانطلاق: ${convoy.date}</span>
+                            <span class="text-xs text-slate-600 mr-2">الحقل: ${convoy.field}</span>
+                            <span class="text-xs text-blue-800 font-bold mr-2">(نظامي: ${convoy.tankers?.length || 0})</span>
+                            <span class="text-xs text-rose-700 font-bold mr-2">(طوارئ: ${convoy.emergency?.length || 0})</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="printConvoyEnvelopeOnly('${convoy.id}')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
+                                📄 واجهة الظرف (الإحصائية)
+                            </button>
+                            <button onclick="downloadConvoyArchiveEnvelopeExcel('${convoy.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
+                                📥 سحب الظرف إلكترونياً (Excel)
+                            </button>
+                            <button onclick="printConvoyCompleteFile('${convoy.id}')" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition flex items-center gap-1">
+                                📦 سحب القافلة كاملاً
+                            </button>
+                            <button onclick="deleteConvoy('${convoy.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs px-2.5 py-2 rounded-lg font-bold transition">
+                                🗑️ حذف القافلة
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteConvoy(id) {
+            if (currentUserRole !== 'admin') return;
+            if (confirm('هل أنت متأكد من حذف هذه القافلة من الأرشيف؟')) {
+                globalConvoysArchive = globalConvoysArchive.filter(c => c.id !== id);
+                saveToCloud();
+                renderConvoysArchive();
+            }
+        }
+
+        function generateEnvelopePages(convoy) {
+            const allList = [...convoy.tankers, ...convoy.emergency];
+            const pageSize = 40;
+            const totalPages = Math.ceil(allList.length / pageSize);
+            const envId = Math.floor(1000 + Math.random() * 9000);
+
+            let totalWeightKg = 0;
+            convoy.tankers.forEach(t => {
+                const w = parseFloat(String(t.weightKg).replace(/,/g, ''));
+                if (!isNaN(w)) totalWeightKg += w;
+            });
+
+            let htmlString = '';
+            for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
+                const startIdx = pageIdx * pageSize;
+                const endIdx = Math.min(startIdx + pageSize, allList.length);
+                const pageItems = allList.slice(startIdx, endIdx);
+                const isLastPage = (pageIdx === totalPages - 1);
+
+                htmlString += `
+                    <div class="envelope-cover-page bg-white rounded-xl shadow-none text-right dir-rtl">
+                        <div>
+                            <div class="flex justify-between items-center border-b-2 border-black pb-2 mb-2">
+                                <div class="text-[11px] font-bold leading-tight">
+                                    <div>الجمهورية العربية السورية</div>
+                                    <div>الشركة السورية للبترول - المنطقة الوسطى</div>
+                                </div>
+                                <div class="text-center">
+                                    <h1 class="text-[14px] font-black tracking-wider border-2 border-black px-3 py-1 rounded inline-block bg-slate-50">
+                                        📁 ظرف مذكرات التفريغ (واجهة الظرف الإحصائية - A4 عمودي متوسِط)
+                                    </h1>
+                                    <div class="text-[11px] font-bold text-slate-700 mt-1">تاريخ الانطلاق: ${convoy.date} | الصفحة (${pageIdx + 1} من ${totalPages})</div>
+                                </div>
+                                <div class="text-left text-[11px] font-bold">
+                                    <div>رقم الظرف: SPC-ENV-${envId}</div>
+                                    <div>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-GB')}</div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-2 text-center text-[11px] font-bold mb-3">
+                                <div class="border border-black p-1.5 bg-slate-100 rounded">
+                                    <span class="block text-slate-700 text-[10px]">القافلة النظامية</span>
+                                    <span class="text-blue-900 font-extrabold text-[12px]">${convoy.tankers.length} صهريج</span>
+                                </div>
+                                <div class="border border-black p-1.5 bg-rose-50 rounded">
+                                    <span class="block text-rose-800 text-[10px]">صهاريج الطوارئ</span>
+                                    <span class="text-rose-900 font-extrabold text-[12px]">${convoy.emergency?.length || 0} صهريج</span>
+                                </div>
+                                <div class="border border-black p-1.5 bg-emerald-50 rounded">
+                                    <span class="block text-emerald-800 text-[10px]">إجمالي المذكرات</span>
+                                    <span class="text-emerald-900 font-extrabold text-[12px]">${allList.length} مذكرة</span>
+                                </div>
+                                <div class="border border-black p-1.5 bg-amber-50 rounded">
+                                    <span class="block text-amber-800 text-[10px]">إجمالي وزن التحميل</span>
+                                    <span class="text-amber-900 font-extrabold text-[12px]">${totalWeightKg > 0 ? totalWeightKg.toLocaleString() + ' kg' : '---'}</span>
+                                </div>
+                            </div>
+
+                            <table class="w-full border-collapse border-2 border-black text-[11px] mb-3">
+                                <tbody>
+                                    <tr class="border-b border-black">
+                                        <td class="border-l border-black p-1.5 bg-slate-50 w-1/3"><strong>الحقل المصدر:</strong> ${convoy.field}</td>
+                                        <td class="border-l border-black p-1.5 bg-slate-50 w-1/3"><strong>مكان التفريغ المستهدف:</strong> ${convoy.unloadPlace}</td>
+                                        <td class="p-1.5 bg-slate-50 w-1/3"><strong>الشركة الناقلة:</strong> ${convoy.transCompany}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="mb-2">
+                                <div class="text-[11px] font-bold mb-1 border-r-2 border-blue-900 pr-1">📋 بيان ملخص بالمذكرات المرفقة تلقائياً (الجزء ${pageIdx + 1}):</div>
+                                <div class="overflow-x-auto border-2 border-black rounded">
+                                    <table class="w-full border-collapse text-[10.5px] text-center">
+                                        <thead class="bg-slate-200 font-bold border-b-2 border-black">
+                                            <tr>
+                                                <th class="border-l border-black p-1.5">م</th>
+                                                <th class="border-l border-black p-1.5">نوع</th>
+                                                <th class="border-l border-black p-1.5">اسم السائق</th>
+                                                <th class="border-l border-black p-1.5">رقم السيارة</th>
+                                                <th class="border-l border-black p-1.5">رمز المذكرة</th>
+                                                <th class="p-1.5">الدخول</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${pageItems.map((t, idx) => `
+                                                <tr class="border-b border-black">
+                                                    <td class="border-l border-black p-1 font-bold">${startIdx + idx + 1}</td>
+                                                    <td class="border-l border-black p-1 font-bold ${t.type === 'طوارئ' ? 'text-rose-700' : 'text-blue-700'}">${t.type}</td>
+                                                    <td class="border-l border-black p-1">${t.driverName}</td>
+                                                    <td class="border-l border-black p-1 font-bold">${t.carNumber}</td>
+                                                    <td class="border-l border-black p-1 font-mono">${t.serial}</td>
+                                                    <td class="p-1 text-emerald-800 font-bold">${t.entryTime ? 'دخل ✓' : 'بانتظار'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            ${isLastPage ? `
+                            <div class="relative mt-2 pt-2 border-t-2 border-black text-center">
+                                <div class="text-rose-700 font-extrabold text-[11px] border border-rose-700 py-1.5 px-6 rounded bg-rose-50 inline-block shadow-sm">
+                                    [ ختم بوابة المنطقة الوسطى ]
+                                </div>
+                            </div>
+                            ` : ``}
+                            <div class="mt-2 pt-1 border-t border-slate-300 flex justify-between items-center text-[9.5px]">
+                                <div class="text-slate-500 font-bold">الشركة السورية للبترول - نظام الحماية والأرشفة الآلي</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            return htmlString;
+        }
+
+        function printCurrentEnvelopeCoverOnly() {
+            if (currentUserRole !== 'admin') return;
+            if (tankersData.length === 0 && emergencyData.length === 0) {
+                alert('لا توجد بيانات قافلة حالية');
+                return;
+            }
+            const tempConvoy = {
+                id: 'temp',
+                date: tankersData[0]?.dispatchDate || '27/10/2026',
+                field: tankersData[0]?.field || 'رميلان',
+                unloadPlace: tankersData[0]?.unloadPlace || 'حمص',
+                transCompany: tankersData[0]?.transCompany || 'شركة سيلك',
+                tankers: tankersData,
+                emergency: emergencyData
+            };
+            document.getElementById('cardsPrintContainer').innerHTML = generateEnvelopePages(tempConvoy);
+            setTimeout(() => { window.print(); }, 200);
+        }
+
+        function printConvoyEnvelopeOnly(id) {
+            if (currentUserRole !== 'admin') return;
+            const convoy = globalConvoysArchive.find(c => c.id === id);
+            if (!convoy) return;
+            document.getElementById('cardsPrintContainer').innerHTML = generateEnvelopePages(convoy);
+            setTimeout(() => { window.print(); }, 200);
+        }
+
+        function printConvoyCompleteFile(id) {
+            if (currentUserRole !== 'admin') return;
+            let convoy = id === 'temp' ? {
+                id: 'temp',
+                date: tankersData[0]?.dispatchDate || '27/10/2026',
+                field: tankersData[0]?.field || 'رميلان',
+                unloadPlace: tankersData[0]?.unloadPlace || 'حمص',
+                transCompany: tankersData[0]?.transCompany || 'شركة سيلك',
+                tankers: tankersData,
+                emergency: emergencyData
+            } : globalConvoysArchive.find(c => c.id === id);
+
+            if (!convoy) return;
+            const allList = [...convoy.tankers, ...convoy.emergency];
+
+            const staffPhotoBase64 = captureStaffPhoto();
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+
+            allList.forEach(t => {
+                if (!t.entryTime) {
+                    t.entryTime = timeStr;
+                    t.entryGateStaff = currentGateUserFullName;
+                }
+                if (!t.printTurnNumber) {
+                    t.printTurnNumber = getNextPrintTurnNumber();
+                }
+            });
+            
+            saveToCloud();
+
+            const container = document.getElementById('cardsPrintContainer');
+            container.innerHTML = generateEnvelopePages(convoy);
+
+            allList.forEach((t, idx) => {
+                container.appendChild(createCardElement(t, idx + 1));
+            });
+
+            setTimeout(() => { window.print(); }, 300);
+        }
+
+        function createCardElement(t, queueIndex = 1) {
+            const card = document.createElement('div');
+            card.className = "print-card-box bg-white rounded-xl border-2 border-black shadow-none mb-4 page-break relative text-right dir-rtl w-full flex flex-col justify-between box-sizing-border";
+            const isEmergency = t.type === 'طوارئ';
+            const displayTurnNum = t.printTurnNumber || queueIndex;
+
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center border-b-2 border-black pb-1 mb-1 relative">
+                        <div class="text-[10px] font-bold leading-tight">
+                            <div class="text-blue-900 font-extrabold text-[11px]">الجمهورية العربية السورية</div>
+                            <div>الشركة السورية للبترول - إدارة المنطقة الوسطى</div>
+                            <div class="text-slate-600 text-[9.5px]">بوابة دخول وتفريغ صهاريج النفط</div>
+                        </div>
+
+                        <div class="text-center">
+                            <h2 class="text-[12px] font-black tracking-wide border-2 border-black px-2 py-0.5 rounded-lg inline-block bg-slate-100 shadow-sm">
+                                📄 مذكرة تفريغ صهريج ${isEmergency ? '(طوارئ)' : ''}
+                            </h2>
+                            <div class="text-[9.5px] font-extrabold ${isEmergency ? 'text-rose-700 bg-rose-50 border border-rose-300 rounded px-1 mt-0.5' : 'text-blue-900 mt-0.5'}">
+                                ${isEmergency ? `صهريج طوارئ (الرقم التسلسلي ضمن القافلة م): ${t.rowNum}` : `الرقم التسلسلي ضمن القافلة (م): ${t.rowNum}`}
+                            </div>
+                            <div class="text-[9px] font-mono font-bold text-rose-700 mt-0.5">رمز المذكرة : ${t.serial}</div>
+                        </div>
+
+                        <div class="flex flex-col items-end gap-0.5">
+                            <div class="border-2 border-black rounded-lg px-2.5 py-0.5 bg-amber-50 text-center shadow-sm">
+                                <span class="text-[8.5px] font-extrabold text-amber-900 block border-b border-amber-300 pb-0.5">رقم الدور (الدور)</span>
+                                <span class="text-[12px] font-black font-mono text-blue-950">#${displayTurnNum}</span>
+                            </div>
+                            <div class="text-left text-[8.5px] font-bold text-slate-800 space-y-0.5 bg-blue-50/80 p-1 rounded border border-blue-200">
+                                <div><strong>موظف البوابة:</strong></div>
+                                <div class="text-blue-900 font-black text-[9px]">${t.entryGateStaff || currentGateUserFullName || 'غير محدد'} <span class="text-rose-700">(ر م)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="w-full border-collapse border-2 border-black text-[10px] mb-1.5 shadow-sm">
+                        <tbody>
+                            <tr class="border-b-2 border-black">
+                                <td class="border-l-2 border-black p-1 bg-slate-50 w-1/2"><strong>تاريخ الانطلاق:</strong> <span class="text-slate-900 font-bold">${t.dispatchDate}</span></td>
+                                <td class="p-1 bg-slate-50 w-1/2"><strong>تاريخ وتوقيت دخول البوابة:</strong> <span class="font-mono font-bold text-blue-900 bg-blue-100 px-1 py-0.5 rounded border border-blue-300">${t.entryTime || 'قيد الدخول'}</span></td>
+                            </tr>
+                            <tr class="border-b-2 border-black">
+                                <td class="border-l-2 border-black p-1 w-1/2"><strong>اسم السائق:</strong> <span class="font-bold text-slate-900 text-[11px]">${t.driverName}</span></td>
+                                <td class="p-1 w-1/2"><strong>${isEmergency ? 'رقم الهاتف' : 'نوع السيارة'}:</strong> <span class="font-bold">${isEmergency ? t.phone : t.carType}</span></td>
+                            </tr>
+                            <tr class="border-b-2 border-black">
+                                <td class="border-l-2 border-black p-1"><strong>رقم السيارة (النمرة):</strong> <span class="font-black text-blue-900 text-[12px] bg-amber-100 px-2 py-0.5 rounded border-2 border-amber-400">${t.carNumber}</span></td>
+                                <td class="p-1 ${isEmergency ? 'bg-rose-50' : 'bg-emerald-50'}">
+                                    <strong>${isEmergency ? 'مواصـلات / خط' : 'وزن التحميل المكتوب (kg)'}:</strong> <span class="font-extrabold text-[11px] ${isEmergency ? 'text-rose-900' : 'text-emerald-900'}">${isEmergency ? t.routes : t.weightKg}</span>
+                                </td>
+                            </tr>
+                            <tr class="border-b-2 border-black">
+                                <td class="border-l-2 border-black p-1 ${isEmergency ? 'bg-rose-50' : ''}">
+                                    <strong>${isEmergency ? 'كيل الصهريج' : 'الحقل المصدر'}:</strong> <span class="font-bold">${isEmergency ? t.tankerKiloo : t.field}</span>
+                                </td>
+                                <td class="p-1"><strong>الشركة الناقلة:</strong> <span class="font-bold">${t.transCompany}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="w-full border-collapse border-2 border-black text-[10px] mb-1.5 shadow-sm">
+                        <tbody>
+                            <tr class="border-b-2 border-black bg-slate-100">
+                                <td class="border-l-2 border-black p-1 w-1/3"><strong>الوزن القائم (kg):</strong> <span class="inline-block w-16 border-b border-dotted border-black"></span></td>
+                                <td class="border-l-2 border-black p-1 w-1/3"><strong>الوزن الفارغ (kg):</strong> <span class="inline-block w-16 border-b border-dotted border-black"></span></td>
+                                <td class="p-1 w-1/3"><strong>الوزن الصافي (kg):</strong> <span class="inline-block w-16 border-b border-dotted border-black"></span></td>
+                            </tr>
+                            <tr class="border-b border-black">
+                                <td colspan="3" class="p-1 bg-slate-50/70"><strong>ملاحظات (1):</strong> <span class="inline-block w-4/5 border-b border-dotted border-black"></span></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="p-1 bg-slate-50/70"><span class="inline-block w-full border-b border-dotted border-black min-h-[14px]"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="my-auto py-0.5">
+                    <div class="grid grid-cols-4 text-center text-[10px] font-extrabold border-2 border-black pt-1 pb-3 gap-2 bg-slate-50/80 rounded-lg justify-items-center items-center shadow-sm">
+                        <div class="border-l-2 border-black pl-2 w-full text-center h-full flex flex-col justify-between">
+                            <span class="text-blue-900 border-b border-slate-300 pb-0.5 w-3/4 mx-auto block">بوابة الدخول</span>
+                            <span class="font-normal block mt-2 text-slate-400">ـــــــــــــــــــــ</span>
+                        </div>
+                        <div class="border-l-2 border-black pl-2 w-full text-center h-full flex flex-col justify-between">
+                            <span class="text-blue-900 border-b border-slate-300 pb-0.5 w-3/4 mx-auto block">القبان</span>
+                            <span class="font-normal block mt-2 text-slate-400">ـــــــــــــــــــــ</span>
+                        </div>
+                        <div class="border-l-2 border-black pl-2 w-full text-center h-full flex flex-col justify-between">
+                            <span class="text-blue-900 border-b border-slate-300 pb-0.5 w-3/4 mx-auto block">التفريغ</span>
+                            <span class="font-normal block mt-2 text-slate-400">ـــــــــــــــــــــ</span>
+                        </div>
+                        <div class="w-full text-center h-full flex flex-col justify-between">
+                            <span class="text-blue-900 border-b border-slate-300 pb-0.5 w-3/4 mx-auto block">بوابة الخروج</span>
+                            <span class="font-normal block mt-2 text-slate-400">ـــــــــــــــــــــ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center pt-0.5 border-t border-slate-200">
+                    <p class="text-[10.5px] font-black italic tracking-wide text-rose-800">
+                        يتم تسليم هذه المذكرة للبوابة عند الخروج
+                    </p>
+                </div>
+            `;
+            return card;
+        }
+
+        function renderCards(list) {
+            const container = document.getElementById('cardsPrintContainer');
+            container.innerHTML = '';
+            list.forEach((t, idx) => {
+                container.appendChild(createCardElement(t, idx + 1));
+            });
+        }
+
+        function printSingleCardBySerial(serial) {
+            fetchDataFromCloud(() => {
+                let found = null;
+                let foundIdx = 1;
+
+                const allCurrent = [...tankersData, ...emergencyData];
+                found = allCurrent.find((item, idx) => {
+                    if (item.serial === serial) {
+                        foundIdx = idx + 1;
+                        return true;
+                    }
+                    return false;
+                });
+
+                if (!found) {
+                    globalConvoysArchive.forEach(c => {
+                        const all = [...c.tankers, ...c.emergency];
+                        all.forEach((item, idx) => {
+                            if (item.serial === serial) {
+                                found = item;
+                                foundIdx = idx + 1;
+                            }
+                        });
+                    });
+                }
+                if (!found) return;
+
+                const staffPhotoBase64 = captureStaffPhoto();
+                const now = new Date();
+                const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                found.entryTime = timeStr;
+                found.entryGateStaff = currentGateUserFullName;
+                if (!found.printTurnNumber) {
+                    found.printTurnNumber = getNextPrintTurnNumber();
+                }
+
+                saveToCloud();
+
+                renderGateSearch();
+                renderArchiveTable();
+
+                const container = document.getElementById('cardsPrintContainer');
+                container.innerHTML = '';
+                container.appendChild(createCardElement(found, foundIdx));
+                window.print();
+            });
+        }
+
+        function printAllCards() {
+            if (currentUserRole !== 'admin') return;
+            const allList = [...tankersData, ...emergencyData];
+            if (allList.length === 0) {
+                alert('لا توجد مذكرات للطباعة');
+                return;
+            }
+
+            const staffPhotoBase64 = captureStaffPhoto();
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('ar-GB') + ' ' + now.toLocaleTimeString('ar-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+
+            allList.forEach(t => {
+                if (!t.entryTime) {
+                    t.entryTime = timeStr;
+                    t.entryGateStaff = currentGateUserFullName;
+                }
+                if (!t.printTurnNumber) {
+                    t.printTurnNumber = getNextPrintTurnNumber();
+                }
+            });
+
+            saveToCloud();
+
+            renderGateSearch();
+            renderArchiveTable();
+
+            renderCards(allList);
+            window.print();
+        }
+
+        function renderArchiveTable() {
+            if (currentUserRole !== 'admin') return;
+
+            const tbody = document.getElementById('archiveTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let allArchiveItems = [];
+            globalConvoysArchive.forEach(c => {
+                allArchiveItems.push(...c.tankers, ...c.emergency);
+            });
+
+            const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim().toLowerCase() : '';
+            const filtered = allArchiveItems.filter(item => {
+                return item.driverName.toLowerCase().includes(query) ||
+                       item.carNumber.toLowerCase().includes(query) ||
+                       item.serial.toLowerCase().includes(query);
+            });
+
+            filtered.forEach((t, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${index + 1}</td>
+                    <td class="p-3 font-mono text-blue-700 font-bold">${t.serial}</td>
+                    <td class="p-3 font-bold ${t.type === 'طوارئ' ? 'text-rose-600' : 'text-emerald-700'}">${t.type || 'نظامي'}</td>
+                    <td class="p-3">${t.dispatchDate}</td>
+                    <td class="p-3 font-semibold">${t.driverName}</td>
+                    <td class="p-3 font-bold">${t.carNumber}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="printDuplicate('${t.serial}')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow transition">
+                            🖨️ طباعة بدل ضائع
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const countEl = document.getElementById('archiveCount');
+            if(countEl) countEl.innerText = `إجمالي المذكرات المؤرشفة: ${allArchiveItems.length}`;
+        }
+
+        function filterArchive() { renderArchiveTable(); }
+        function printDuplicate(serial) { printSingleCardBySerial(serial); }
+
+        function downloadTemplate() {
+            if (currentUserRole !== 'admin') return;
+            const templateData = [{
+                "م": "1",
+                "اسم السائق": "ابراهيم الابراهيم",
+                "نوع السيارة": "*/*/*/*/*/*",
+                "رقم السيارة": "009018",
+                "kg": "32,160",
+                "الحقل": "رميلان",
+                "مكان التفريغ": "حمص",
+                "الشركة الناقلة": "شركة سيلك"
+            }];
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "القافلة");
+            XLSX.writeFile(wb, "قالب_القافلة_SPC.xlsx");
+        }
+    </script>
+</body>
+</html>
